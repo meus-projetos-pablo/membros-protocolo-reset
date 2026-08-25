@@ -29,19 +29,7 @@ export default async function DashboardLayout({
       <header className="border-b border-white/5 w-full">
         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between py-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="black">
-                <path d="M20 12c0 4.418-3.582 8-8 8-1.523 0-2.946-.426-4.168-1.168L3 20l1.168-4.832C3.426 13.946 3 12.523 3 12c0-4.418 3.582-8 8-8s8 3.582 8 8z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-[15px] font-semibold text-white tracking-tight leading-tight">
-                Protocolo Reset
-              </h1>
-              <p className="text-[11px] text-[#888888] font-medium">
-                Área de Membros
-              </p>
-            </div>
+            <img src="/logo-reset.png" alt="Protocolo Reset" className="w-14 md:w-16 object-contain drop-shadow-md" />
           </div>
 
           <div className="flex items-center gap-4">

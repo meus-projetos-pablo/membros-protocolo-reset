@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
   const segments = pathname.split("/").filter(Boolean);
   const locale = (segments[0] && ["pt", "es", "en"].includes(segments[0])) ? segments[0] : "pt";
 
-  if (!user && (isDashboardRoute || isAdminRoute)) {
+  if (!user && isDashboardRoute) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/login`;
     return NextResponse.redirect(url);

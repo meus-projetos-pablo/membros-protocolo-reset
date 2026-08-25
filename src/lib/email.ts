@@ -5,27 +5,28 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function sendAccessGrantedEmail(
   to: string,
   buyerName: string,
-  locale: string = "pt"
+  locale: string = "pt",
+  productName: string = "Protocolo Reset"
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    let subject = "🔓 Seu acesso ao Protocolo Reset está liberado";
-    let title = "Protocolo Reset";
+    let subject = `🔓 Seu acesso ao ${productName} está liberado`;
+    let title = productName;
     let greeting = `Olá${buyerName ? `, <strong style="color: #f9fafb;">${buyerName}</strong>` : ""},`;
-    let message = `Seu acesso ao <strong style="color: #34d399;">Protocolo Reset</strong> foi liberado com sucesso. Você já pode acessar todo o conteúdo da plataforma.`;
+    let message = `Seu acesso ao <strong style="color: #34d399;">${productName}</strong> foi liberado com sucesso. Você já pode acessar todo o conteúdo da plataforma.`;
     let buttonText = "Acessar Plataforma →";
     let footer = "Protocolo Reset — Cure a procrastinação. Reconquiste seu foco.";
 
     if (locale === "es") {
-      subject = "🔓 Tu acceso al Protocolo Reset está habilitado";
+      subject = `🔓 Tu acceso a ${productName} está habilitado`;
       greeting = `Hola${buyerName ? `, <strong style="color: #f9fafb;">${buyerName}</strong>` : ""},`;
-      message = `Tu acceso al <strong style="color: #34d399;">Protocolo Reset</strong> ha sido habilitado con éxito. Ya puedes acceder a todo el contenido de la plataforma.`;
+      message = `Tu acceso a <strong style="color: #34d399;">${productName}</strong> ha sido habilitado con éxito. Ya puedes acceder a todo el contenido de la plataforma.`;
       buttonText = "Acceder a la Plataforma →";
       footer = "Protocolo Reset — Cura la procrastinación. Recupera tu enfoque.";
     } else if (locale === "en") {
-      subject = "🔓 Your access to the Reset Protocol is granted";
-      title = "Reset Protocol";
+      subject = `🔓 Your access to ${productName} is granted`;
+      title = productName;
       greeting = `Hello${buyerName ? `, <strong style="color: #f9fafb;">${buyerName}</strong>` : ""},`;
-      message = `Your access to the <strong style="color: #34d399;">Reset Protocol</strong> has been successfully granted. You can now access all platform content.`;
+      message = `Your access to <strong style="color: #34d399;">${productName}</strong> has been successfully granted. You can now access all platform content.`;
       buttonText = "Access Platform →";
       footer = "Reset Protocol — Cure procrastination. Reclaim your focus.";
     }
