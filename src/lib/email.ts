@@ -9,55 +9,59 @@ function getPlainText(
   buyerName: string,
   productName: string,
   loginUrl: string,
+  unsubscribeUrl: string,
   locale: string
 ): string {
   if (locale === "es") {
     return [
-      `Hola ${buyerName || ""}`,
+      `Hola, ${buyerName || "Estudiante"}:`,
       "",
-      `Tu acceso a ${productName} ha sido habilitado con exito.`,
+      `Tu acceso a ${productName} ha sido habilitado correctamente. Ya puedes ingresar a la plataforma y acceder a todo el contenido incluido en tu compra.`,
       "",
-      `Accede a la plataforma: ${loginUrl}`,
+      `Acceder a la Plataforma: ${loginUrl}`,
       "",
-      `Si el boton no funciona, copia y pega este enlace en tu navegador:`,
+      `Si el boton no funciona, copia y pega el siguiente enlace en tu navegador:`,
       loginUrl,
       "",
       "---",
-      `Soporte: ${SUPPORT_EMAIL}`,
-      "Protocolo Reset",
+      `¿Necesitas ayuda? Contacta con soporte: ${SUPPORT_EMAIL}`,
+      "Protocolo Reset (c) 2026",
+      `Unsubscribe: ${unsubscribeUrl}`
     ].join("\n");
   }
 
   if (locale === "en") {
     return [
-      `Hello ${buyerName || ""}`,
+      `Hello, ${buyerName || "Student"}:`,
       "",
-      `Your access to ${productName} has been successfully granted.`,
+      `Your access to ${productName} has been successfully enabled. You can now enter the platform and access all the content included in your purchase.`,
       "",
-      `Access the platform: ${loginUrl}`,
+      `Access the Platform: ${loginUrl}`,
       "",
-      `If the button does not work, copy and paste this link in your browser:`,
+      `If the button does not work, copy and paste the following link into your browser:`,
       loginUrl,
       "",
       "---",
-      `Support: ${SUPPORT_EMAIL}`,
-      "Protocolo Reset",
+      `Need help? Contact support: ${SUPPORT_EMAIL}`,
+      "Protocolo Reset (c) 2026",
+      `Unsubscribe: ${unsubscribeUrl}`
     ].join("\n");
   }
 
   return [
-    `Ola ${buyerName || ""}`,
+    `Olá, ${buyerName || "Estudante"}:`,
     "",
-    `Seu acesso ao ${productName} foi liberado com sucesso.`,
+    `Seu acesso ao ${productName} foi habilitado corretamente. Você já pode acessar a plataforma e todo o conteúdo incluído na sua compra.`,
     "",
-    `Acesse a plataforma: ${loginUrl}`,
+    `Acessar a Plataforma: ${loginUrl}`,
     "",
-    `Se o botao nao funcionar, copie e cole este link no seu navegador:`,
+    `Se o botao nao funcionar, copie e cole o seguinte link no seu navegador:`,
     loginUrl,
     "",
     "---",
-    `Suporte: ${SUPPORT_EMAIL}`,
-    "Protocolo Reset",
+    `Precisa de ajuda? Entre em contato com o suporte: ${SUPPORT_EMAIL}`,
+    "Protocolo Reset (c) 2026",
+    `Unsubscribe: ${unsubscribeUrl}`
   ].join("\n");
 }
 
@@ -68,31 +72,31 @@ function getEmailContent(
 ) {
   const content = {
     pt: {
-      subject: `Seu acesso ao ${productName} foi liberado`,
-      greeting: `Olá${buyerName ? `, ${buyerName}` : ""}`,
-      message: `Seu acesso ao <strong style="color: #ffffff;">${productName}</strong> foi liberado com sucesso. Você já pode acessar todo o conteúdo da plataforma.`,
-      button: "Acessar Plataforma",
-      linkFallback: "Se o botão não funcionar, copie e cole este link no seu navegador:",
-      supportLabel: "Precisa de ajuda? Entre em contato:",
-      unsubscribe: "Cancelar inscrição",
+      subject: `Seu acesso ao ${productName} foi habilitado`,
+      greeting: `Olá, ${buyerName || "Estudante"}:`,
+      message: `Seu acesso ao <strong style="color: #ffffff;">${productName}</strong> foi habilitado corretamente. Você já pode acessar a plataforma e todo o conteúdo incluído na sua compra.`,
+      button: "Acessar a Plataforma",
+      linkFallback: "Se o botão não funcionar, copie e cole o seguinte link no seu navegador:",
+      supportLabel: "Precisa de ajuda?",
+      supportLink: "Entre em contato com o suporte",
     },
     es: {
-      subject: `Tu acceso a ${productName} está habilitado`,
-      greeting: `Hola${buyerName ? `, ${buyerName}` : ""}`,
-      message: `Tu acceso a <strong style="color: #ffffff;">${productName}</strong> ha sido habilitado con éxito. Ya puedes acceder a todo el contenido de la plataforma.`,
+      subject: `Tu acceso a ${productName} ha sido habilitado`,
+      greeting: `Hola, ${buyerName || "Estudiante"}:`,
+      message: `Tu acceso a <strong style="color: #ffffff;">${productName}</strong> ha sido habilitado correctamente. Ya puedes ingresar a la plataforma y acceder a todo el contenido incluido en tu compra.`,
       button: "Acceder a la Plataforma",
-      linkFallback: "Si el botón no funciona, copia y pega este enlace en tu navegador:",
-      supportLabel: "¿Necesitas ayuda? Contáctanos:",
-      unsubscribe: "Darse de baja",
+      linkFallback: "Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:",
+      supportLabel: "¿Necesitas ayuda?",
+      supportLink: "Contacta con soporte",
     },
     en: {
-      subject: `Your access to ${productName} is ready`,
-      greeting: `Hello${buyerName ? `, ${buyerName}` : ""}`,
-      message: `Your access to <strong style="color: #ffffff;">${productName}</strong> has been successfully granted. You can now access all platform content.`,
-      button: "Access Platform",
-      linkFallback: "If the button doesn't work, copy and paste this link in your browser:",
-      supportLabel: "Need help? Contact us:",
-      unsubscribe: "Unsubscribe",
+      subject: `Your access to ${productName} is enabled`,
+      greeting: `Hello, ${buyerName || "Student"}:`,
+      message: `Your access to <strong style="color: #ffffff;">${productName}</strong> has been successfully enabled. You can now enter the platform and access all the content included in your purchase.`,
+      button: "Access the Platform",
+      linkFallback: "If the button does not work, copy and paste the following link into your browser:",
+      supportLabel: "Need help?",
+      supportLink: "Contact support",
     },
   };
 
@@ -108,8 +112,9 @@ export async function sendAccessGrantedEmail(
   try {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://resetmembers.site";
     const loginUrl = `${appUrl}/${locale}/login?email=${encodeURIComponent(to)}`;
+    const unsubscribeUrl = `${appUrl}/${locale}/unsubscribe`;
     const t = getEmailContent(buyerName, productName, locale);
-    const plainText = getPlainText(buyerName, productName, loginUrl, locale);
+    const plainText = getPlainText(buyerName, productName, loginUrl, unsubscribeUrl, locale);
 
     const { error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "Protocolo Reset <send@resetmembers.site>",
@@ -211,17 +216,14 @@ export async function sendAccessGrantedEmail(
           <!-- Footer -->
           <tr>
             <td style="padding: 24px 40px;" class="footer-cell">
-              <p style="margin: 0 0 6px; font-size: 12px; color: #555555; text-align: center;">
-                ${t.supportLabel}
-              </p>
-              <p style="margin: 0 0 16px; font-size: 12px; text-align: center;">
-                <a href="mailto:${SUPPORT_EMAIL}" style="color: #888888; text-decoration: underline;">${SUPPORT_EMAIL}</a>
+              <p style="margin: 0 0 16px; font-size: 13px; color: #555555; text-align: center;">
+                ${t.supportLabel} <a href="mailto:${SUPPORT_EMAIL}" style="color: #888888; text-decoration: underline;">${t.supportLink}</a>
               </p>
               <p style="margin: 0 0 8px; font-size: 11px; color: #333333; text-align: center;">
-                Protocolo Reset &copy; ${new Date().getFullYear()}
+                Protocolo Reset &copy; 2026
               </p>
               <p style="margin: 0; font-size: 11px; text-align: center;">
-                <a href="mailto:${SUPPORT_EMAIL}?subject=unsubscribe" style="color: #444444; text-decoration: underline;">${t.unsubscribe}</a>
+                <a href="${unsubscribeUrl}" style="color: #444444; text-decoration: underline;">Unsubscribe</a>
               </p>
             </td>
           </tr>
