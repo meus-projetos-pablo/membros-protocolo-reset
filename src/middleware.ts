@@ -58,6 +58,6 @@ export const config = {
      * - api/webhooks (webhook endpoints - no auth needed)
      * - public assets
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff|woff2|css|js|ico)$).*)",
   ],
 };

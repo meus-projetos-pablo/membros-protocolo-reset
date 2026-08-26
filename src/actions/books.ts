@@ -2,14 +2,14 @@
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getAuthSessionUser } from "@/actions/auth";
 import type { Book, BookChapter } from "@/lib/types";
 import { unstable_cache, updateTag } from "next/cache";
 
 export async function getUserBooks() {
-  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getAuthSessionUser();
 
   if (!user) return [];
 
@@ -24,18 +24,21 @@ export async function getUserBooks() {
 
   const bookIds = accessList.map((a) => a.book_id);
 
-  const { data: books } = await adminClient
-    .from("books")
-    .select("id, title, description, cover_image_url, total_pages, locale, created_at")
-    .in("id", bookIds)
-    .order("created_at", { ascending: true });
+  const [booksResponse, progressResponse] = await Promise.all([
+    adminClient
+      .from("books")
+      .select("id, title, description, cover_image_url, total_pages, locale, created_at")
+      .in("id", bookIds)
+      .order("created_at", { ascending: true }),
+    adminClient
+      .from("reading_progress")
+      .select("book_id, current_page")
+      .eq("user_id", user.id)
+      .in("book_id", bookIds)
+  ]);
 
-  // Get reading progress for each book
-  const { data: progressList } = await adminClient
-    .from("reading_progress")
-    .select("book_id, current_page")
-    .eq("user_id", user.id)
-    .in("book_id", bookIds);
+  const books = booksResponse.data;
+  const progressList = progressResponse.data;
 
   const progressMap = new Map(
     (progressList || []).map((p) => [p.book_id, p.current_page])
@@ -48,22 +51,32 @@ export async function getUserBooks() {
 }
 
 export async function getBookContent(bookId: string) {
-  const supabase = await createSupabaseServerClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getAuthSessionUser();
 
   if (!user) return null;
 
   const adminClient = createSupabaseAdminClient();
 
-  // Verify access
-  const { data: access } = await adminClient
-    .from("user_access")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("book_id", bookId)
-    .single();
+  // Fetch access and progress concurrently
+  const [accessResponse, progressResponse] = await Promise.all([
+    adminClient
+      .from("user_access")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("book_id", bookId)
+      .single(),
+    adminClient
+      .from("reading_progress")
+      .select("current_page")
+      .eq("user_id", user.id)
+      .eq("book_id", bookId)
+      .single()
+  ]);
+
+  const access = accessResponse.data;
+  const progress = progressResponse.data;
 
   if (!access) return null;
 
@@ -82,14 +95,6 @@ export async function getBookContent(bookId: string) {
   );
 
   const book = await getCachedBook(bookId);
-
-  // Get reading progress
-  const { data: progress } = await adminClient
-    .from("reading_progress")
-    .select("current_page")
-    .eq("user_id", user.id)
-    .eq("book_id", bookId)
-    .single();
 
   return {
     ...book,

@@ -3,6 +3,7 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 // Senha universal usada por baixo dos panos para permitir login apenas com o e-mail
 const UNIVERSAL_PASSWORD = "UniversalPassword123!@#";
@@ -88,12 +89,16 @@ export async function signOut() {
   redirect("/pt/login");
 }
 
-export async function getCurrentUser() {
+export const getAuthSessionUser = cache(async () => {
   const supabase = await createSupabaseServerClient();
+  return supabase.auth.getUser();
+});
+
+export const getCurrentUser = cache(async () => {
   const {
     data: { user },
     error: userError,
-  } = await supabase.auth.getUser();
+  } = await getAuthSessionUser();
 
   if (userError) {
     console.log("getCurrentUser: getUser error:", userError.message);
@@ -122,4 +127,4 @@ export async function getCurrentUser() {
   }
 
   return profile;
-}
+});

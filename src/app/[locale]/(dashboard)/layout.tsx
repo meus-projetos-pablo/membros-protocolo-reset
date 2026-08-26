@@ -1,6 +1,7 @@
 import { getCurrentUser } from "@/actions/auth";
 import { redirect } from "next/navigation";
 import { signOut } from "@/actions/auth";
+import { getDictionary } from "@/lib/dictionaries";
 
 const VALID_LOCALES = ["pt", "es", "en"];
 
@@ -23,6 +24,8 @@ export default async function DashboardLayout({
     redirect(`/${locale}/login`);
   }
 
+  const t = getDictionary(locale).dashboard;
+
   return (
     <div className="min-h-screen bg-[#0c0c0c] font-sans flex flex-col">
       {/* Top Nav Minimalista */}
@@ -40,7 +43,7 @@ export default async function DashboardLayout({
                   <polyline points="16 17 21 12 16 7" />
                   <line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
-                <span className="hidden sm:inline">Sair da conta</span>
+                <span className="hidden sm:inline">{t.logout}</span>
               </button>
             </form>
           </div>

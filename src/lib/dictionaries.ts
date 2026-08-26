@@ -12,6 +12,16 @@ export const dictionaries = {
       helpText: "Precisa de ajuda?",
       supportLink: "Contate o suporte",
     },
+    dashboard: {
+      greeting: "Olá, {name}!",
+      subtitle: "Aqui você encontra todo o seu conteúdo disponível.",
+      logout: "Sair",
+    },
+    reader: {
+      previous: "Anterior",
+      next: "Próximo",
+      finish: "Finalizar",
+    },
   },
   es: {
     login: {
@@ -24,6 +34,16 @@ export const dictionaries = {
       helpText: "¿Necesitas ayuda?",
       supportLink: "Contacta con soporte",
     },
+    dashboard: {
+      greeting: "¡Hola, {name}!",
+      subtitle: "Aquí encontrarás todo tu contenido disponible.",
+      logout: "Salir",
+    },
+    reader: {
+      previous: "Anterior",
+      next: "Siguiente",
+      finish: "Finalizar",
+    },
   },
   en: {
     login: {
@@ -35,6 +55,16 @@ export const dictionaries = {
       buttonLoading: "Loading...",
       helpText: "Need help?",
       supportLink: "Contact support",
+    },
+    dashboard: {
+      greeting: "Hello, {name}!",
+      subtitle: "Here you will find all your available content.",
+      logout: "Logout",
+    },
+    reader: {
+      previous: "Previous",
+      next: "Next",
+      finish: "Finish",
     },
   },
 };

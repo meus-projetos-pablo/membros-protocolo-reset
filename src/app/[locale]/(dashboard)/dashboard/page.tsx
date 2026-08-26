@@ -1,6 +1,7 @@
 import { getUserBooks } from "@/actions/books";
 import { getCurrentUser } from "@/actions/auth";
 import Link from "next/link";
+import { getDictionary } from "@/lib/dictionaries";
 
 export default async function DashboardPage({
   params,
@@ -10,6 +11,7 @@ export default async function DashboardPage({
   const { locale } = await params;
   const books = await getUserBooks();
   const user = await getCurrentUser();
+  const t = getDictionary(locale).dashboard;
   
   const firstName = user?.full_name?.split(" ")[0] || "";
 
@@ -18,10 +20,10 @@ export default async function DashboardPage({
       {/* Header */}
       <div className="mb-10">
         <h1 className="text-[28px] font-medium text-white tracking-tight mb-1">
-          {firstName ? `Bem-vindo, ${firstName}!` : "Bem-vindo!"}
+          {firstName ? t.greeting.replace("{name}", firstName) : t.greeting.replace(", {name}", "").replace("{name}", "")}
         </h1>
         <p className="text-[14px] text-gray-500">
-          Acesse abaixo todo o seu conteúdo disponível
+          {t.subtitle}
         </p>
       </div>
 

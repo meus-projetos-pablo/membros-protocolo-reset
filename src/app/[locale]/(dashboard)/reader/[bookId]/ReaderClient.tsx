@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveReadingProgress } from "@/actions/reading";
 import type { BookChapter } from "@/lib/types";
+import { getDictionary } from "@/lib/dictionaries";
 
 interface ReaderBook {
   id: string;
@@ -23,6 +24,8 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
 
   const totalPages = book.total_pages || 1;
   const progress = Math.round((currentPage / totalPages) * 100);
+  
+  const t = getDictionary(locale).reader;
 
   // Build a flat list of pages with chapter info
   const flatPages: { content: string; chapter: string; pageInChapter: number }[] = [];
@@ -236,7 +239,7 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="15 18 9 12 15 6" />
             </svg>
-            <span>Anterior</span>
+            <span>{t.previous}</span>
           </button>
 
           {/* Desktop progress */}
@@ -257,7 +260,7 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
               onClick={handleFinish}
               className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 text-[14px] font-semibold transition-all bg-white text-black hover:bg-gray-200 rounded-full min-w-[120px]"
             >
-              <span>Finalizar</span>
+              <span>{t.finish}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
@@ -267,7 +270,7 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
               onClick={goNext}
               className="flex items-center justify-center gap-2 px-4 md:px-6 py-3 text-[14px] font-semibold transition-all bg-white text-black hover:bg-gray-200 rounded-full min-w-[120px]"
             >
-              <span>Próxima</span>
+              <span>{t.next}</span>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
