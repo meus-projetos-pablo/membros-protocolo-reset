@@ -7,7 +7,15 @@ export async function POST(request: NextRequest) {
   try {
     // Validate hottok
     const hottok = request.headers.get("x-hotmart-hottok");
-    if (hottok !== process.env.HOTMART_HOTTOK) {
+    const isAdminTest = hottok === "__TEST_FROM_ADMIN__";
+
+    // For admin tests, verify the admin session cookie exists
+    if (isAdminTest) {
+      const adminSession = request.cookies.get("admin_session");
+      if (!adminSession || adminSession.value !== "authenticated") {
+        return NextResponse.json({ error: "Unauthorized test" }, { status: 401 });
+      }
+    } else if (hottok !== process.env.HOTMART_HOTTOK) {
       console.error("Invalid hottok received");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
