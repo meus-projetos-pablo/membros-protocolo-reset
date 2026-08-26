@@ -74,6 +74,7 @@ function getEmailContent(
       button: "Acessar Plataforma",
       linkFallback: "Se o botão não funcionar, copie e cole este link no seu navegador:",
       supportLabel: "Precisa de ajuda? Entre em contato:",
+      unsubscribe: "Cancelar inscrição",
     },
     es: {
       subject: `Tu acceso a ${productName} está habilitado`,
@@ -82,6 +83,7 @@ function getEmailContent(
       button: "Acceder a la Plataforma",
       linkFallback: "Si el botón no funciona, copia y pega este enlace en tu navegador:",
       supportLabel: "¿Necesitas ayuda? Contáctanos:",
+      unsubscribe: "Darse de baja",
     },
     en: {
       subject: `Your access to ${productName} is ready`,
@@ -90,6 +92,7 @@ function getEmailContent(
       button: "Access Platform",
       linkFallback: "If the button doesn't work, copy and paste this link in your browser:",
       supportLabel: "Need help? Contact us:",
+      unsubscribe: "Unsubscribe",
     },
   };
 
@@ -214,8 +217,11 @@ export async function sendAccessGrantedEmail(
               <p style="margin: 0 0 16px; font-size: 12px; text-align: center;">
                 <a href="mailto:${SUPPORT_EMAIL}" style="color: #888888; text-decoration: underline;">${SUPPORT_EMAIL}</a>
               </p>
-              <p style="margin: 0; font-size: 11px; color: #333333; text-align: center;">
+              <p style="margin: 0 0 8px; font-size: 11px; color: #333333; text-align: center;">
                 Protocolo Reset &copy; ${new Date().getFullYear()}
+              </p>
+              <p style="margin: 0; font-size: 11px; text-align: center;">
+                <a href="mailto:${SUPPORT_EMAIL}?subject=unsubscribe" style="color: #444444; text-decoration: underline;">${t.unsubscribe}</a>
               </p>
             </td>
           </tr>
