@@ -5,8 +5,31 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { unstable_cache } from "next/cache";
+
 // Senha universal usada por baixo dos panos para permitir login apenas com o e-mail
 const UNIVERSAL_PASSWORD = "UniversalPassword123!@#";
+
+// Cache L2 para o perfil do usuário (5 minutos de TTL)
+async function fetchUserProfile(userId: string) {
+  const admin = createSupabaseAdminClient();
+  const { data: profile } = await admin
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  return profile || null;
+}
+
+const getCachedProfileInternal = unstable_cache(
+  fetchUserProfile,
+  ["user-profile-cache"],
+  { revalidate: 300 }
+);
+
+async function getCachedProfile(userId: string) {
+  return getCachedProfileInternal(userId);
+}
 
 export async function signInWithEmail(email: string) {
   const supabase = await createSupabaseServerClient();
@@ -30,33 +53,32 @@ export async function signInWithEmail(email: string) {
     };
   }
 
-  // 2. Para fazer o login direto sem verificação de e-mail, usamos signInWithPassword.
-  // Como o usuário não sabe a senha, nós usamos a senha universal configurada no sistema.
+  // 2. Para fazer o login direto sem verificação de e-mail, usamos signInWithPassword com a senha universal.
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email: normalizedEmail,
     password: UNIVERSAL_PASSWORD,
   });
 
-  // 3. Se falhar por senha incorreta (usuário antigo/criado antes da regra universal), 
-  // forçamos a atualização da senha usando o admin client e tentamos novamente.
+  // 3. Se falhar por senha (usuário antigo), busca diretamente pelo email no profile sem usar listUsers()
   if (signInError) {
     const admin = createSupabaseAdminClient();
-    
-    // Busca o usuário na tabela auth.users pelo email
-    const { data: usersData } = await admin.auth.admin.listUsers();
-    const userToUpdate = usersData?.users.find((u) => u.email === normalizedEmail);
-    
-    if (userToUpdate) {
-      await admin.auth.admin.updateUserById(userToUpdate.id, {
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .maybeSingle();
+
+    if (profile?.id) {
+      await admin.auth.admin.updateUserById(profile.id, {
         password: UNIVERSAL_PASSWORD,
       });
-      
-      // Tenta logar de novo
+
+      // Tenta logar novamente
       const { error: retryError } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password: UNIVERSAL_PASSWORD,
       });
-      
+
       if (retryError) {
         return { error: "Erro interno ao gerar sessão. Contate o suporte." };
       }
@@ -65,16 +87,11 @@ export async function signInWithEmail(email: string) {
     }
   }
 
-  // Get user's locale for redirect
+  // Get user's locale for redirect from cached profile
   const { data: { user: loggedUser } } = await supabase.auth.getUser();
   let locale = "pt";
   if (loggedUser) {
-    const admin = createSupabaseAdminClient();
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("locale")
-      .eq("id", loggedUser.id)
-      .single();
+    const profile = await getCachedProfile(loggedUser.id);
     if (profile?.locale) {
       locale = profile.locale;
     }
@@ -100,31 +117,9 @@ export const getCurrentUser = cache(async () => {
     error: userError,
   } = await getAuthSessionUser();
 
-  if (userError) {
-    console.log("getCurrentUser: getUser error:", userError.message);
-  }
-
-  if (!user) {
-    console.log("getCurrentUser: No user found.");
+  if (userError || !user) {
     return null;
   }
 
-  const admin = createSupabaseAdminClient();
-  const { data: profile, error: profileError } = await admin
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  if (profileError) {
-    console.log("getCurrentUser: profile query error:", profileError.message);
-    return null;
-  }
-
-  if (!profile) {
-    console.log("getCurrentUser: No profile returned.");
-    return null;
-  }
-
-  return profile;
+  return await getCachedProfile(user.id);
 });

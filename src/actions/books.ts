@@ -4,7 +4,68 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getAuthSessionUser } from "@/actions/auth";
 import type { Book, BookChapter } from "@/lib/types";
-import { unstable_cache, updateTag } from "next/cache";
+import { unstable_cache, updateTag, revalidateTag } from "next/cache";
+
+// Cache L2 Global: catálogo de livros (1 hora de TTL, compartilhado entre todos os usuários)
+async function fetchCatalogBooks() {
+  const adminClient = createSupabaseAdminClient();
+  const { data: books } = await adminClient
+    .from("books")
+    .select("id, title, description, cover_image_url, total_pages, locale, created_at, show_chapters")
+    .order("created_at", { ascending: true });
+  return books || [];
+}
+
+const getCachedCatalogBooksInternal = unstable_cache(
+  fetchCatalogBooks,
+  ["books-catalog-global"],
+  { revalidate: 3600, tags: ["books-catalog"] }
+);
+
+export async function getCachedCatalogBooks() {
+  return getCachedCatalogBooksInternal();
+}
+
+// Cache L2 por Usuário: lista de book_id que o usuário tem acesso (5 min de TTL ou invalidado pelo webhook)
+async function fetchUserBookIds(userId: string) {
+  const adminClient = createSupabaseAdminClient();
+  const { data: accessList } = await adminClient
+    .from("user_access")
+    .select("book_id")
+    .eq("user_id", userId);
+  return (accessList || []).map((a) => a.book_id);
+}
+
+const getCachedUserBookIdsInternal = unstable_cache(
+  fetchUserBookIds,
+  ["user-access-list"],
+  { revalidate: 300 }
+);
+
+export async function getCachedUserBookIds(userId: string) {
+  return getCachedUserBookIdsInternal(userId);
+}
+
+// Cache L2 por Livro: conteúdo completo do livro (capítulos e páginas)
+async function fetchSingleBook(bookId: string) {
+  const adminClient = createSupabaseAdminClient();
+  const { data } = await adminClient
+    .from("books")
+    .select("*")
+    .eq("id", bookId)
+    .maybeSingle();
+  return data;
+}
+
+const getCachedBookInternal = unstable_cache(
+  fetchSingleBook,
+  ["book-content-cache"],
+  { revalidate: 3600 }
+);
+
+async function getCachedBook(bookId: string) {
+  return getCachedBookInternal(bookId);
+}
 
 export async function getUserBooks() {
   const {
@@ -13,38 +74,32 @@ export async function getUserBooks() {
 
   if (!user) return [];
 
-  const adminClient = createSupabaseAdminClient();
-
-  const { data: accessList } = await adminClient
-    .from("user_access")
-    .select("book_id")
-    .eq("user_id", user.id);
-
-  if (!accessList || accessList.length === 0) return [];
-
-  const bookIds = accessList.map((a) => a.book_id);
-
-  const [booksResponse, progressResponse] = await Promise.all([
-    adminClient
-      .from("books")
-      .select("id, title, description, cover_image_url, total_pages, locale, created_at")
-      .in("id", bookIds)
-      .order("created_at", { ascending: true }),
-    adminClient
-      .from("reading_progress")
-      .select("book_id, current_page")
-      .eq("user_id", user.id)
-      .in("book_id", bookIds)
+  // Pega os acessos cacheados do usuário e o catálogo global em paralelo (0 chamadas repetidas ao Postgres para o catálogo)
+  const [userBookIds, catalogBooks] = await Promise.all([
+    getCachedUserBookIds(user.id),
+    getCachedCatalogBooks(),
   ]);
 
-  const books = booksResponse.data;
-  const progressList = progressResponse.data;
+  if (!userBookIds || userBookIds.length === 0) return [];
+
+  const allowedBookIdsSet = new Set(userBookIds);
+  const userAllowedBooks = catalogBooks.filter((book) => allowedBookIdsSet.has(book.id));
+
+  if (userAllowedBooks.length === 0) return [];
+
+  // Consulta apenas o progresso de leitura atual do usuário
+  const adminClient = createSupabaseAdminClient();
+  const { data: progressList } = await adminClient
+    .from("reading_progress")
+    .select("book_id, current_page")
+    .eq("user_id", user.id)
+    .in("book_id", userBookIds);
 
   const progressMap = new Map(
     (progressList || []).map((p) => [p.book_id, p.current_page])
   );
 
-  return (books || []).map((book) => ({
+  return userAllowedBooks.map((book) => ({
     ...book,
     current_page: progressMap.get(book.id) || 1,
   }));
@@ -57,48 +112,29 @@ export async function getBookContent(bookId: string) {
 
   if (!user) return null;
 
-  const adminClient = createSupabaseAdminClient();
+  // Verifica acesso via cache do usuário
+  const userBookIds = await getCachedUserBookIds(user.id);
+  if (!userBookIds.includes(bookId)) {
+    return null;
+  }
 
-  // Fetch access and progress concurrently
-  const [accessResponse, progressResponse] = await Promise.all([
-    adminClient
-      .from("user_access")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("book_id", bookId)
-      .single(),
+  // Busca progresso de leitura e livro cacheado em paralelo
+  const adminClient = createSupabaseAdminClient();
+  const [progressResponse, book] = await Promise.all([
     adminClient
       .from("reading_progress")
       .select("current_page")
       .eq("user_id", user.id)
       .eq("book_id", bookId)
-      .single()
+      .maybeSingle(),
+    getCachedBook(bookId),
   ]);
 
-  const access = accessResponse.data;
-  const progress = progressResponse.data;
-
-  if (!access) return null;
-
-  const getCachedBook = unstable_cache(
-    async (id: string) => {
-      const adminForCache = createSupabaseAdminClient();
-      const { data } = await adminForCache
-        .from("books")
-        .select("*")
-        .eq("id", id)
-        .single();
-      return data;
-    },
-    [`book-content-${bookId}`],
-    { tags: [`book-${bookId}`] }
-  );
-
-  const book = await getCachedBook(bookId);
+  if (!book) return null;
 
   return {
     ...book,
-    current_page: progress?.current_page || 1,
+    current_page: progressResponse.data?.current_page || 1,
   };
 }
 
@@ -150,6 +186,9 @@ export async function createBook(bookData: {
     return { error: error.message };
   }
 
+  // Invalida o catálogo global de livros para todos os usuários
+  updateTag("books-catalog");
+
   return { data };
 }
 
@@ -188,8 +227,9 @@ export async function updateBook(
     return { error: error.message };
   }
 
-  // Invalidate cache for this book since it was updated
+  // Invalidate cache for this book and the global catalog
   updateTag(`book-${bookId}`);
+  updateTag("books-catalog");
 
   return { data };
 }
@@ -203,6 +243,9 @@ export async function deleteBook(bookId: string) {
     console.error("Error deleting book:", error);
     return { error: error.message };
   }
+
+  updateTag(`book-${bookId}`);
+  updateTag("books-catalog");
 
   return { success: true };
 }

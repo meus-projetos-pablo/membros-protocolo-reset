@@ -17,7 +17,23 @@ interface ReaderBook {
 
 export function ReaderClient({ book, locale }: { book: ReaderBook; locale: string }) {
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(book.current_page || 1);
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(`reading-progress-${book.id}`);
+        if (cached) {
+          const pageNum = parseInt(cached, 10);
+          if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= (book.total_pages || 1)) {
+            return pageNum;
+          }
+        }
+      } catch {
+        // Fallback to server state
+      }
+    }
+    return book.current_page || 1;
+  });
+
   const [showChapters, setShowChapters] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -26,6 +42,15 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
   const progress = Math.round((currentPage / totalPages) * 100);
   
   const t = getDictionary(locale).reader;
+
+  // Sync to L1 localStorage cache immediately on page turn (0ms latency)
+  useEffect(() => {
+    try {
+      localStorage.setItem(`reading-progress-${book.id}`, String(currentPage));
+    } catch {
+      // Ignore quota or private browsing errors
+    }
+  }, [currentPage, book.id]);
 
   // Build a flat list of pages with chapter info
   const flatPages: { content: string; chapter: string; pageInChapter: number }[] = [];
@@ -53,7 +78,7 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
     });
   }
 
-  // Save progress with debounce
+  // Save progress to database with efficient debounce to avoid hammering DB
   const saveProgress = useCallback(
     async (page: number) => {
       await saveReadingProgress(book.id, page);
@@ -65,7 +90,7 @@ export function ReaderClient({ book, locale }: { book: ReaderBook; locale: strin
     if (isFinishing) return;
     const timer = setTimeout(() => {
       saveProgress(currentPage);
-    }, 800);
+    }, 1500);
     return () => clearTimeout(timer);
   }, [currentPage, saveProgress, isFinishing]);
 

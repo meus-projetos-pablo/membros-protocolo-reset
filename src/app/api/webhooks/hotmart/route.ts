@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { sendAccessGrantedEmail } from "@/lib/email";
 import type { HotmartWebhookPayload } from "@/lib/types";
+import { updateTag } from "next/cache";
 
 // Helper for asynchronous pauses
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -296,6 +297,14 @@ export async function POST(request: NextRequest) {
       userId,
       product.id
     );
+
+    // Invalidate user cache tags so new access reflects instantly in dashboard
+    try {
+      updateTag(`user-access-${userId}`);
+      updateTag(`user-${userId}`);
+    } catch (tagErr) {
+      console.warn("[Webhook Warning] Could not update cache tags:", tagErr);
+    }
 
     // 6. Send access granted email (has 3 internal retries with backoff)
     const emailResult = await sendAccessGrantedEmail(
