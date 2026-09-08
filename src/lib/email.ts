@@ -113,24 +113,28 @@ export async function sendAccessGrantedEmail(
   to: string,
   buyerName: string,
   locale: string = "pt",
-  productName: string = "Protocolo Reset"
+  productName: string = "Protocolo Reset",
+  maxRetries: number = 3
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://resetmembers.site";
-    const loginUrl = `${appUrl}/${locale}/login?email=${encodeURIComponent(to)}`;
-    const unsubscribeUrl = `${appUrl}/${locale}/unsubscribe`;
-    const t = getEmailContent(buyerName, productName, locale);
-    const plainText = getPlainText(buyerName, productName, loginUrl, unsubscribeUrl, locale);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://resetmembers.site";
+  const loginUrl = `${appUrl}/${locale}/login?email=${encodeURIComponent(to)}`;
+  const unsubscribeUrl = `${appUrl}/${locale}/unsubscribe`;
+  const t = getEmailContent(buyerName, productName, locale);
+  const plainText = getPlainText(buyerName, productName, loginUrl, unsubscribeUrl, locale);
 
-    const { error } = await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "Protocolo Reset <send@resetmembers.site>",
-      to: [to],
-      subject: t.subject,
-      text: plainText,
-      headers: {
-        "List-Unsubscribe": `<mailto:${SUPPORT_EMAIL}?subject=unsubscribe>`,
-      },
-      html: `<!DOCTYPE html>
+  let lastError: string | undefined;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const { error } = await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "Protocolo Reset <send@resetmembers.site>",
+        to: [to],
+        subject: t.subject,
+        text: plainText,
+        headers: {
+          "List-Unsubscribe": `<mailto:${SUPPORT_EMAIL}?subject=unsubscribe>`,
+        },
+        html: `<!DOCTYPE html>
 <html lang="${locale}" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8">
@@ -241,19 +245,25 @@ export async function sendAccessGrantedEmail(
 
 </body>
 </html>`,
-    });
+      });
 
-    if (error) {
-      console.error("Resend error:", error);
-      return { success: false, error: error.message };
+      if (!error) {
+        return { success: true };
+      }
+
+      lastError = error.message;
+      console.warn(`Resend email attempt ${attempt}/${maxRetries} failed:`, error.message);
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : "Unknown error";
+      console.warn(`Resend email attempt ${attempt}/${maxRetries} error:`, lastError);
     }
 
-    return { success: true };
-  } catch (err) {
-    console.error("Email send error:", err);
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Unknown error",
-    };
+    // Wait with backoff before next attempt if not last attempt
+    if (attempt < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+    }
   }
+
+  console.error(`Email sending permanently failed after ${maxRetries} attempts:`, lastError);
+  return { success: false, error: lastError };
 }
