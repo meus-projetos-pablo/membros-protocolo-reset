@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Protocolo Reset — Cure a Procrastinação",
+  title: "Protocolo Reset",
   description:
     "Plataforma de aprendizado focada em curar procrastinação e vício digital. Reconquiste seu foco e produtividade.",
   keywords: ["procrastinação", "foco", "produtividade", "reset digital", "vício digital"],
