@@ -10,18 +10,21 @@ export default function UnsubscribePage() {
   const content = {
     pt: {
       title: "Inscrição Cancelada",
-      message: "Você não receberá mais e-mails não essenciais desta plataforma.",
-      back: "Voltar para a página inicial",
+      message: "Você foi descadastrado com sucesso e não receberá mais mensagens ou e-mails promocionais.",
+      submessage: "Seu acesso aos livros e conteúdos adquiridos continua ativo e seguro na plataforma.",
+      back: "Acessar a Plataforma",
     },
     es: {
       title: "Suscripción Cancelada",
-      message: "Ya no recibirás correos electrónicos no esenciales de esta plataforma.",
-      back: "Volver a la página principal",
+      message: "Te has dado de baja correctamente y ya no recibirás más correos o mensajes promocionales.",
+      submessage: "Tu acceso a los libros y contenidos comprados sigue activo y seguro en la plataforma.",
+      back: "Acceder a la Plataforma",
     },
     en: {
-      title: "Unsubscribed",
-      message: "You will no longer receive non-essential emails from this platform.",
-      back: "Return to homepage",
+      title: "Unsubscribed Successfully",
+      message: "You have been successfully unsubscribed and will no longer receive promotional emails or messages.",
+      submessage: "Your access to purchased books and content remains active and secure on the platform.",
+      back: "Access the Platform",
     },
   };
 
@@ -40,8 +43,12 @@ export default function UnsubscribePage() {
           {t.title}
         </h1>
         
-        <p className="text-gray-400 text-sm mb-8">
+        <p className="text-gray-300 text-sm mb-3 leading-relaxed">
           {t.message}
+        </p>
+
+        <p className="text-gray-500 text-xs mb-8">
+          {t.submessage}
         </p>
 
         <Link 

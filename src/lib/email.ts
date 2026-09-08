@@ -79,6 +79,8 @@ function getEmailContent(
       linkFallback: "Se o botão não funcionar, copie e cole o seguinte link no seu navegador:",
       supportLabel: "Precisa de ajuda?",
       supportLink: "Entre em contato com o suporte",
+      unsubscribeText: "Não deseja mais receber mensagens promocionais?",
+      unsubscribeLink: "Cancelar inscrição (Unsubscribe)",
     },
     es: {
       subject: `Tu acceso a ${productName} ha sido habilitado`,
@@ -88,6 +90,8 @@ function getEmailContent(
       linkFallback: "Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:",
       supportLabel: "¿Necesitas ayuda?",
       supportLink: "Contacta con soporte",
+      unsubscribeText: "¿No deseas recibir más correos promocionales?",
+      unsubscribeLink: "Darse de baja (Unsubscribe)",
     },
     en: {
       subject: `Your access to ${productName} is enabled`,
@@ -97,6 +101,8 @@ function getEmailContent(
       linkFallback: "If the button does not work, copy and paste the following link into your browser:",
       supportLabel: "Need help?",
       supportLink: "Contact support",
+      unsubscribeText: "Don't want to receive promotional emails?",
+      unsubscribeLink: "Unsubscribe",
     },
   };
 
@@ -216,14 +222,14 @@ export async function sendAccessGrantedEmail(
           <!-- Footer -->
           <tr>
             <td style="padding: 24px 40px;" class="footer-cell">
-              <p style="margin: 0 0 16px; font-size: 13px; color: #555555; text-align: center;">
-                ${t.supportLabel} <a href="mailto:${SUPPORT_EMAIL}" style="color: #888888; text-decoration: underline;">${t.supportLink}</a>
+              <p style="margin: 0 0 12px; font-size: 13px; color: #777777; text-align: center;">
+                ${t.supportLabel} <a href="mailto:${SUPPORT_EMAIL}" style="color: #aaaaaa; text-decoration: underline;">${t.supportLink}</a>
               </p>
-              <p style="margin: 0 0 8px; font-size: 11px; color: #333333; text-align: center;">
+              <p style="margin: 0 0 8px; font-size: 11px; color: #555555; text-align: center;">
                 Protocolo Reset &copy; 2026
               </p>
               <p style="margin: 0; font-size: 11px; text-align: center;">
-                <a href="${unsubscribeUrl}" style="color: #444444; text-decoration: underline;">Unsubscribe</a>
+                <a href="${unsubscribeUrl}" style="color: #666666; text-decoration: underline;" target="_blank">Unsubscribe</a>
               </p>
             </td>
           </tr>
