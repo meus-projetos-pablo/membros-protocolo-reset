@@ -127,13 +127,10 @@ export async function sendAccessGrantedEmail(
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const { error } = await resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "Protocolo Reset <send@resetmembers.site>",
+        from: process.env.RESEND_FROM_EMAIL || "Protocolo Reset <acesso@resetmembers.site>",
         to: [to],
         subject: t.subject,
         text: plainText,
-        headers: {
-          "List-Unsubscribe": `<mailto:${SUPPORT_EMAIL}?subject=unsubscribe>`,
-        },
         html: `<!DOCTYPE html>
 <html lang="${locale}" xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -163,11 +160,6 @@ export async function sendAccessGrantedEmail(
   </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #0c0c0c; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-
-  <!-- Preheader -->
-  <div style="display: none; font-size: 1px; color: #0c0c0c; line-height: 1px; max-height: 0; max-width: 0; opacity: 0; overflow: hidden;">
-    ${t.greeting} - ${t.subject}
-  </div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0c0c0c;">
     <tr>
