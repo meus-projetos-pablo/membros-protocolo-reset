@@ -16,17 +16,19 @@ function getPlainText(
     return [
       `Hola, ${buyerName || "Estudiante"}:`,
       "",
-      `Tu acceso a ${productName} ha sido habilitado correctamente. Ya puedes ingresar a la plataforma y acceder a todo el contenido incluido en tu compra.`,
+      "Tu acceso al Protocolo Reset ya está habilitado. Ya puedes entrar a la plataforma y acceder a todo el contenido incluido en tu compra.",
       "",
-      `Acceder a la Plataforma: ${loginUrl}`,
+      `Acceder a la plataforma: ${loginUrl}`,
       "",
-      `Si el boton no funciona, copia y pega el siguiente enlace en tu navegador:`,
+      "Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:",
+      "",
       loginUrl,
       "",
-      "---",
       `¿Necesitas ayuda? Contacta con soporte: ${SUPPORT_EMAIL}`,
-      "Protocolo Reset (c) 2026",
-      `Unsubscribe: ${unsubscribeUrl}`
+      "",
+      "Protocolo Reset © 2026",
+      "",
+      `Cancelar suscripción: ${unsubscribeUrl}`
     ].join("\n");
   }
 
@@ -34,16 +36,18 @@ function getPlainText(
     return [
       `Hello, ${buyerName || "Student"}:`,
       "",
-      `Your access to ${productName} has been successfully enabled. You can now enter the platform and access all the content included in your purchase.`,
+      "Your access to Protocolo Reset is now enabled. You can now enter the platform and access all the content included in your purchase.",
       "",
-      `Access the Platform: ${loginUrl}`,
+      `Access the platform: ${loginUrl}`,
       "",
-      `If the button does not work, copy and paste the following link into your browser:`,
+      "If the button does not work, copy and paste the following link into your browser:",
+      "",
       loginUrl,
       "",
-      "---",
       `Need help? Contact support: ${SUPPORT_EMAIL}`,
-      "Protocolo Reset (c) 2026",
+      "",
+      "Protocolo Reset © 2026",
+      "",
       `Unsubscribe: ${unsubscribeUrl}`
     ].join("\n");
   }
@@ -51,17 +55,19 @@ function getPlainText(
   return [
     `Olá, ${buyerName || "Estudante"}:`,
     "",
-    `Seu acesso ao ${productName} foi habilitado corretamente. Você já pode acessar a plataforma e todo o conteúdo incluído na sua compra.`,
+    "Seu acesso ao Protocolo Reset já está habilitado. Você já pode entrar na plataforma e acessar todo o conteúdo incluído na sua compra.",
     "",
-    `Acessar a Plataforma: ${loginUrl}`,
+    `Acessar a plataforma: ${loginUrl}`,
     "",
-    `Se o botao nao funcionar, copie e cole o seguinte link no seu navegador:`,
+    "Se o botão não funcionar, copie e cole o seguinte link no seu navegador:",
+    "",
     loginUrl,
     "",
-    "---",
     `Precisa de ajuda? Entre em contato com o suporte: ${SUPPORT_EMAIL}`,
-    "Protocolo Reset (c) 2026",
-    `Unsubscribe: ${unsubscribeUrl}`
+    "",
+    "Protocolo Reset © 2026",
+    "",
+    `Cancelar inscrição: ${unsubscribeUrl}`
   ].join("\n");
 }
 
@@ -72,36 +78,33 @@ function getEmailContent(
 ) {
   const content = {
     pt: {
-      subject: `Seu acesso ao ${productName} foi habilitado`,
+      subject: "Seu acesso ao Protocolo Reset já está habilitado",
       greeting: `Olá, ${buyerName || "Estudante"}:`,
-      message: `Seu acesso ao <strong style="color: #ffffff;">${productName}</strong> foi habilitado corretamente. Você já pode acessar a plataforma e todo o conteúdo incluído na sua compra.`,
-      button: "Acessar a Plataforma",
+      message: `Seu acesso ao <strong style="color: #ffffff;">Protocolo Reset</strong> já está habilitado. Você já pode entrar na plataforma e acessar todo o conteúdo incluído na sua compra.`,
+      button: "Acessar a plataforma",
       linkFallback: "Se o botão não funcionar, copie e cole o seguinte link no seu navegador:",
       supportLabel: "Precisa de ajuda?",
       supportLink: "Entre em contato com o suporte",
-      unsubscribeText: "Não deseja mais receber mensagens promocionais?",
-      unsubscribeLink: "Cancelar inscrição (Unsubscribe)",
+      unsubscribeLink: "Cancelar inscrição",
     },
     es: {
-      subject: `Tu acceso a ${productName} ha sido habilitado`,
+      subject: "Tu acceso al Protocolo Reset ya está habilitado",
       greeting: `Hola, ${buyerName || "Estudiante"}:`,
-      message: `Tu acceso a <strong style="color: #ffffff;">${productName}</strong> ha sido habilitado correctamente. Ya puedes ingresar a la plataforma y acceder a todo el contenido incluido en tu compra.`,
-      button: "Acceder a la Plataforma",
+      message: `Tu acceso al <strong style="color: #ffffff;">Protocolo Reset</strong> ya está habilitado. Ya puedes entrar a la plataforma y acceder a todo el contenido incluido en tu compra.`,
+      button: "Acceder a la plataforma",
       linkFallback: "Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:",
       supportLabel: "¿Necesitas ayuda?",
       supportLink: "Contacta con soporte",
-      unsubscribeText: "¿No deseas recibir más correos promocionales?",
-      unsubscribeLink: "Darse de baja (Unsubscribe)",
+      unsubscribeLink: "Cancelar suscripción",
     },
     en: {
-      subject: `Your access to ${productName} is enabled`,
+      subject: "Your access to Protocolo Reset is now enabled",
       greeting: `Hello, ${buyerName || "Student"}:`,
-      message: `Your access to <strong style="color: #ffffff;">${productName}</strong> has been successfully enabled. You can now enter the platform and access all the content included in your purchase.`,
-      button: "Access the Platform",
+      message: `Your access to <strong style="color: #ffffff;">Protocolo Reset</strong> is now enabled. You can now enter the platform and access all the content included in your purchase.`,
+      button: "Access the platform",
       linkFallback: "If the button does not work, copy and paste the following link into your browser:",
       supportLabel: "Need help?",
       supportLink: "Contact support",
-      unsubscribeText: "Don't want to receive promotional emails?",
       unsubscribeLink: "Unsubscribe",
     },
   };
@@ -225,7 +228,7 @@ export async function sendAccessGrantedEmail(
                 Protocolo Reset &copy; 2026
               </p>
               <p style="margin: 0; font-size: 11px; text-align: center;">
-                <a href="${unsubscribeUrl}" style="color: #666666; text-decoration: underline;" target="_blank">Unsubscribe</a>
+                <a href="${unsubscribeUrl}" style="color: #666666; text-decoration: underline;" target="_blank">${t.unsubscribeLink}</a>
               </p>
             </td>
           </tr>
